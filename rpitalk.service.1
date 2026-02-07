@@ -1,0 +1,90 @@
+.TH RPITALK.SERVICE 1 "February 2026" "rpitalk" "User Services"
+.SH NAME
+rpitalk.service \- systemd user service for the rpitalk DECtalk emulator
+
+.SH SYNOPSIS
+.B rpitalk.service
+
+.SH DESCRIPTION
+.B rpitalk.service
+is a systemd user service that runs the
+.B rpitalk-emulator
+program as a background process.
+
+The service allows a Raspberry Pi to function as a DECtalk-compatible
+hardware speech synthesizer by listening on a serial device provided by
+the USB OTG (gadget) interface and producing speech output through
+Speech Dispatcher.
+
+This service is intended to be run as a
+.B user service
+rather than a system-wide system service.
+
+.SH USER SERVICE AND LINGERING
+Because
+.B rpitalk.service
+is installed as a systemd user unit, it normally only runs while the
+user is logged in.
+
+To allow the service to start at boot and continue running when the user
+is not logged in, systemd user
+.B lingering
+must be enabled for that user.
+
+This can be done with the following command:
+
+.PP
+.nf
+loginctl enable-linger
+.fi
+
+This command only needs to be run once per user.
+
+.SH USAGE
+Enable the service:
+
+.PP
+.nf
+systemctl --user enable rpitalk.service
+.fi
+
+Start the service:
+
+.PP
+.nf
+systemctl --user start rpitalk.service
+.fi
+
+Check service status:
+
+.PP
+.nf
+systemctl --user status rpitalk.service
+.fi
+
+Stop the service:
+
+.PP
+.nf
+systemctl --user stop rpitalk.service
+.fi
+
+.SH FILES
+.TP
+.I ~/.config/systemd/user/rpitalk.service
+User systemd unit file.
+
+.SH SEE ALSO
+.BR systemctl (1),
+.BR loginctl (1),
+.BR rpitalk-emulator (1)
+
+.SH AUTHOR
+John G Heim <jheim@math.wisc.edu>
+
+.SH COPYRIGHT
+Copyright \(co 2026 John G Heim.
+
+This program is free software; you may redistribute it and/or modify it
+under the terms of the GNU General Public License version 3 or later.
+

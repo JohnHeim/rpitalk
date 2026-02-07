@@ -1,0 +1,89 @@
+.TH RPITALK-EMULATOR 1 "February 2026" "rpitalk" "User Commands"
+.SH NAME
+rpitalk-emulator \- Raspberry Pi DECtalk-compatible speech synthesizer emulator
+
+.SH SYNOPSIS
+.B rpitalk-emulator
+.RI [ options ]
+
+.SH DESCRIPTION
+.B rpitalk-emulator
+provides software for turning a Raspberry Pi into a DECtalk-compatible
+hardware speech synthesizer.
+
+It emulates the DECtalk serial command protocol and uses Speech Dispatcher
+as a backend, allowing legacy software designed for DECtalk hardware to
+produce speech through modern text-to-speech engines.
+
+The emulator listens on a serial device provided by the Raspberry Pi USB
+OTG (gadget) interface and processes incoming DECtalk-style commands to
+generate speech output.
+
+.SH OPTIONS
+.TP
+.BR \-p ", " \-\-port " " \fIdevice\fR
+Serial port device to use.
+Default is \fB/dev/ttyGS0\fR, which is typically created by the USB OTG
+(gadget) serial driver.
+
+.TP
+.BR \-d ", " \-\-debug " " \fIlevel\fR
+Set debug output level.
+A value of 0 disables debugging.
+Default is 0.
+
+.TP
+.BR \-t ", " \-\-test " " \fIspeech|conn\fR
+Run a built-in test instead of starting the emulator.
+.RS
+.TP
+.B speech
+Perform a speech synthesis test.
+.TP
+.B conn
+Perform a serial connection test.
+.RE
+
+.SH EXAMPLES
+Start the emulator using the default USB gadget serial device:
+.PP
+.nf
+rpitalk-emulator
+.fi
+
+Use a different serial device:
+.PP
+.nf
+rpitalk-emulator --port /dev/ttyUSB0
+.fi
+
+Run the speech test:
+.PP
+.nf
+rpitalk-emulator --test speech
+.fi
+
+Enable debugging output:
+.PP
+.nf
+rpitalk-emulator --debug 1
+.fi
+
+.SH FILES
+.TP
+.I /dev/ttyGS0
+Default USB OTG gadget serial device.
+
+.SH SEE ALSO
+.BR speech-dispatcher (1),
+.BR espeak-ng (1)
+
+.SH AUTHOR
+John G Heim <jheim@math.wisc.edu>
+
+.SH COPYRIGHT
+Copyright \(co 2026 John G Heim.
+
+This program is free software; you may redistribute it and/or modify it
+under the terms of the GNU General Public License version 3 or later.
+

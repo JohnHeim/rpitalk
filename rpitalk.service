@@ -1,0 +1,17 @@
+[Unit]
+Description=RPITalk Emulator
+After=sound.target
+Wants=sound.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rpitalk-emulator
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target
+

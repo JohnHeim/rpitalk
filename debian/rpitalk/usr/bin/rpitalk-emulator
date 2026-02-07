@@ -1,0 +1,58 @@
+#! /usr/bin/python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 John Heim
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import argparse
+from rpitalk import RPItalk
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Raspberry Pi hardware speech emulator"
+    )
+
+    parser.add_argument(
+        "-p", "--port",
+        default="/dev/ttyGS0",
+        help="Serial port device (default: /dev/ttyGS0)"
+    )
+
+    parser.add_argument(
+        "-d", "--debug",
+        type=int,
+        default=0,
+        help="Debug level (0 = off)"
+    )
+
+    parser.add_argument(
+        "-t", "--test",
+        choices=["speech", "conn"],
+        help="Run a test: speech or conn"
+    )
+
+    return parser.parse_args()
+
+#=== MAIN ===#
+if __name__ == "__main__":
+    args = parse_args()
+    rpitalk = RPItalk(args.port, args.debug)
+    if args.test  == "speech":
+        rpitalk.testSpeech()
+    elif args.test == "conn":
+        rpitalk.testConnection()
+    else:
+        rpitalk.emulate()
+# EOF

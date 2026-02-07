@@ -1,0 +1,5 @@
+rpitalk (0.9) UNRELEASED; urgency=medium
+
+  * Initial Debian package.
+
+ -- John G Heim <jheim@math.wisc.edu>  Thu, 05 Feb 2026 20:21:44 -0600

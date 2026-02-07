@@ -1,0 +1,153 @@
+Script started on 2026-02-06 12:43:49-06:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="201" LINES="62"]
+bash: /home/john/.bashrc: line 124: unexpected EOF while looking for matching `''
+]666;vte.shell.postexec=2\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9/debian\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9/debian\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9/debian[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9/debian[00m$ ^C[?2004l[?2004h[?2004l
+]666;vte.shell.postexec=130\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9/debian\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9/debian\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9/debian[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9/debian[00m$ ^C[?2004l[?2004h[?2004l
+]666;vte.shell.postexec=130\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9/debian\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9/debian\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9/debian[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9/debian[00m$ sftp rpitalk ^C[?2004l[?2004h[?2004l
+]666;vte.shell.postexec=130\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9/debian\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9/debian\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9/debian[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9/debian[00m$ 
+[?2004l]666;vte.shell.postexec=130\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9/debian\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9/debian\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9/debian[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9/debian[00m$ cd ..
+[?2004l]133;C\]666;vte.shell.preexec!\]666;vte.shell.postexec=0\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9[00m$ cd ..sftp rpitalk [1Pls -1F *.deb[2Prm rpitalk^C[?2004l[?2004h[?2004l
+]666;vte.shell.postexec=130\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9[00m$ 
+[?2004l]666;vte.shell.postexec=130\]7;file://nitschke/home/john/lambeau/Packages/rpitalk-0.9\]0;john@nitschke:~/lambeau/Packages/rpitalk-0.9\]666;vte.shell.precmd!\[?2004h]0;john@nitschke: ~/lambeau/Packages/rpitalk-0.9[01;32mjohn@nitschke[00m:[01;34m~/lambeau/Packages/rpitalk-0.9[00m$ !dh
+[?2004ldh_make --createorig
+]133;C\]666;vte.shell.preexec!\Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+Please respond with one of the following: s,i,l,p
+Type of package: (single, indep, library, python)
+[s/i/l/p]?
+
+Script done on 2026-02-06 12:45:27-06:00 [COMMAND_EXIT_CODE="0"]

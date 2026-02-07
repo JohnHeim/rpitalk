@@ -1,0 +1,6 @@
+./rpitalk-emulator
+./dectalkemulator.py
+./rpitalk.py
+./rpitalk.service
+./rpitalk-emulator.1
+./rpitalk.service.1

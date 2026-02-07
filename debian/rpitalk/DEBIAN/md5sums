@@ -1,0 +1,8 @@
+fce3db006c9ca00217cae4546bfdd14f  usr/bin/rpitalk-emulator
+d5a1c38f00fe0325a329e865063e861b  usr/lib/python3/dist-packages/dectalkemulator.py
+3dcc9a9202fbfd43b04c5c19784e5c33  usr/lib/python3/dist-packages/rpitalk.py
+0e0fec8f3e44674c8a219358a4a3bad9  usr/lib/systemd/user/rpitalk.service
+daabe02acab968a454011b724350c4f7  usr/share/doc/rpitalk/changelog.gz
+d320e2c5b40c3e238e710c7dfe579bb8  usr/share/doc/rpitalk/copyright
+3de94cadf793d65de9e5be97e5e5e305  usr/share/man/man1/rpitalk-emulator.1.gz
+6047d0f6e739b1a46392829d267a0503  usr/share/man/man1/rpitalk.service.1.gz

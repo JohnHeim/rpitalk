@@ -1,0 +1,7 @@
+rpitalk-emulator        usr/bin/
+dectalkemulator.py    usr/lib/python3/dist-packages/
+rpitalk.py             usr/lib/python3/dist-packages/
+rpitalk.service        usr/lib/systemd/user/
+rpitalk-emulator.1 usr/share/man/man1/
+rpitalk.service.1 usr/share/man/man1/
+
