@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rpitalk
-Source: https://people.math.wisc.edu/~jheim/
+Source: https://github.com/JohnHeim/rpitalk
 
 Files: *
 Copyright: 2026 John G Heim <jheim@math.wisc.edu>
