@@ -72,12 +72,3 @@ This program is free software, licensed under the GNU General Public License ver
 
 ---
 
-If you want, I can also **append a small “Troubleshooting” section** for beginners that covers:
-
-- OTG port detection issues
-- Speech Dispatcher misconfiguration
-- Audio output problems
-
-This makes the README much more complete for new users. Do you want me to add that?
-
-
