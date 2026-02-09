@@ -27,7 +27,7 @@ import sys
 class DECtalkEmulator:
 
     Identity  = "RPItalk"
-    Version = "0.0-10"
+    Version = "0.9"
     DeviceIdString = f"{Identity} {Version}\r"
     MaxBufferSize = 4096
 
@@ -93,7 +93,8 @@ class DECtalkEmulator:
             newValue = self.pitch + int(strValue)
         else:
             newValue = int(strValue)
-        setValue = self.convertWithinRange(newValue, 50, 350)
+
+        setValue = self.convertWithinRange(newValue + 40, 50, 200)
         try:
             self.speechClient.set_pitch(setValue)
             self.pitch = newValue
@@ -237,6 +238,7 @@ class DECtalkEmulator:
 
     #=== Emulation Functions ===#
     def processCommands(self, buffer):
+        logging.debug(f"Processing commands: [{buffer}]")
         commands = buffer.strip().split(":")
         for command in commands:
             if not command:
@@ -247,29 +249,29 @@ class DECtalkEmulator:
             cmd = parms[0][:2]
             val = parms[1]
 
-            if cmd == "ra":
+            if cmd == "ra" and val != "":
                 self.setSpeechRate(val)
 
-            elif cmd == "vo":
+            elif cmd == "vo" and val != "":
                 self.setSpeechVolume(val)
 
-            elif cmd == "pu":
+            elif cmd == "pu" and val != "":
                 self.setSpeechPunctuation(val)
 
-            elif cmd == "na":
+            elif cmd == "na" and val != "":
                 self.setVoiceByName(val)
 
-            elif cmd == "dv":
+            elif cmd == "dv" and val != "":
                 sbc = parms[1]
                 val = parms[2]
 
-                if sbc == "ap":
-                    self.setSpeechPitch(val)
+                if sbc == "ap" and val != "":
+                        self.setSpeechPitch(val)
 
-                elif sbc == "g5":
+                elif sbc == "g5" and val != "":
                     self.setSpeechG5(val)
 
-                elif sbc == "pr":
+                elif sbc == "pr" and val != "":
                     self.setSpeechRange(val)
 
             elif cmd[0] == "n" and cmd[1] >= "0" and cmd[1] <= "9":
@@ -284,12 +286,10 @@ class DECtalkEmulator:
         for byte in data:
             # This bloc of code processes the byte.  There is another comment at the end of the bloc of code.
             if byte == self.BreakChar:
-                logging.debug("ACK")
                 self.speechClient.cancel()
                 response.append(0x01)
 
             elif byte == self.IndexChar:
-                logging.debug("IND")
                 response.append(self.IndexChar)
 
             elif byte == self.CommandStart:

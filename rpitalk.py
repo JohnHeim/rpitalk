@@ -87,8 +87,6 @@ class RPItalk(DECtalkEmulator):
 
             except OSError as error:
                 logging.warning(f"Write failed: {error}")
-        if self.debugLevel >= 3:
-            self.dumpBytes(data, 'AK')
         return success
 
     def emulate(self):
@@ -103,8 +101,12 @@ class RPItalk(DECtalkEmulator):
                         if not data:
                             raise OSError("Host disconnected")
                         else:
+                            if self.debugLevel >= 3:
+                                self.dumpBytes(data, 'RX')
                             response = self.parse(data)
                             if response:
+                                if self.debugLevel >= 3:
+                                    self.dumpBytes(response, 'AK')
                                 self.writeToHost(response)
 
                 except OSError:
