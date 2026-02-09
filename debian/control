@@ -13,6 +13,9 @@ Description: DECtalk-compatible speech synthesizer emulator for Raspberry Pi
  rpitalk provides software for turning a Raspberry Pi into a
  DECtalk-compatible hardware speech synthesizer.
  .
- When run on a Raspberry Pi with an OTG (gadget) USB port, this package emulates the DECtalk command protocol and uses Speech
- Dispatcher as a backend, allowing a screen  reader on a host computer to produce speech through a modern text-to-speech engine.
+ When run on a Raspberry Pi with an OTG (gadget) USB port,
+ this package emulates the DECtalk command protocol and uses Speech
+ Dispatcher as a backend, allowing a screen  reader on a
+ host computer to produce speech through a modern text-to-speech
+ engine.
  .
