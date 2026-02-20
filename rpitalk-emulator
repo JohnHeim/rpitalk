@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 John Heim
+# Copyright (C) 2026 John G Heim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,26 +15,61 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from dectalkemulator import DECtalkEmulator
+from litetalkemulator import LiteTalkEmulator
 import argparse
-from rpitalk import RPItalk
+import configparser
+import os
+import sys
 
+ConfigFile = "/etc/rpitalk/emulator.conf"
 
-def parse_args():
+def readConfig():
+    """Read the system config file and return defaults as a dict."""
+    config = configparser.ConfigParser()
+    defaults = {}
+    if os.path.exists(ConfigFile):
+        try:
+            config.read(ConfigFile)
+            # Read [RPITalk] section
+            if "RPITalk" in config:
+                section = config["RPITalk"]
+                if "port" in section:
+                    defaults["port"] = section.get("port")
+                if "emulate" in section:
+                    defaults["emulate"] = section.get("emulate")
+                if "debug" in section:
+                    try:
+                        defaults["debug"] = section.getint("debug")
+                    except ValueError:
+                        defaults["debug"] = 1
+        except Exception as e:
+            print(f"Warning: failed to read config file {ConfigFile}: {e}", file=sys.stderr)
+    return defaults
+
+def parseArgs(defaults):
     parser = argparse.ArgumentParser(
         description="Raspberry Pi hardware speech emulator"
     )
 
     parser.add_argument(
         "-p", "--port",
-        default="/dev/ttyGS0",
-        help="Serial port device (default: /dev/ttyGS0)"
+        default=defaults.get("port", "/dev/ttyGS0"),
+        help=f"Serial port device (default: {defaults.get('port', '/dev/ttyGS0')})"
+    )
+
+    parser.add_argument(
+        "-e", "--emulate",
+        choices=["dectlk", "ltlk"],
+        default=defaults.get("emulate", "dectlk"),
+        help=f"Emulate which synth: dectlk for DECtalk, ltlk for LiteTalk (default = {defaults.get('emulate', 'dectlk')})"
     )
 
     parser.add_argument(
         "-d", "--debug",
         type=int,
-        default=0,
-        help="Debug level (0 = off)"
+        default=defaults.get("debug", 0),
+        help=f"Debug level (0 = off, default = {defaults.get('debug', 1)})"
     )
 
     parser.add_argument(
@@ -47,12 +82,19 @@ def parse_args():
 
 #=== MAIN ===#
 if __name__ == "__main__":
-    args = parse_args()
-    rpitalk = RPItalk(args.port, args.debug)
-    if args.test  == "speech":
-        rpitalk.testSpeech()
-    elif args.test == "conn":
-        rpitalk.testConnection()
+    defaults = readConfig()
+    args = parseArgs(defaults)
+
+    if args.emulate == "ltlk":
+        synth = LiteTalkEmulator(args.port, args.debug)
     else:
-        rpitalk.emulate()
+        synth = DECtalkEmulator(args.port, args.debug)
+
+    if args.test == "speech":
+        synth.testSpeech()
+    elif args.test == "conn":
+        synth.testConnection()
+    else:
+        synth.emulate()
+
 # EOF

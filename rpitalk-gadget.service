@@ -1,0 +1,12 @@
+[Unit]
+Description=RPITalk USB Gadget
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/rpitalk/gadget.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+

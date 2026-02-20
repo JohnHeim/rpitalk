@@ -1,0 +1,129 @@
+#!/bin/bash
+set -e
+
+# Debian postinst script for rpitalk
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright 2026 John G Heim
+
+PACKAGE="rpitalk"
+EMULATOR_CONF="/etc/rpitalk/emulator.conf"
+GADGET_CONF="/etc/rpitalk/gadget.conf"
+SERVICE="rpitalk.service"
+
+# Load debconf library
+. /usr/share/debconf/confmodule || true
+
+# Only run configuration for "configure" stage
+if [ "$1" = "configure" ]; then
+
+    # Debconf questions
+    db_input high $PACKAGE/emulation_type || true
+    db_input high $PACKAGE/serial_port || true
+    db_go || true
+
+    EMULATION=$(db_get $PACKAGE/emulation_type 2>/dev/null || echo "dectlk")
+    PORT=$(db_get $PACKAGE/serial_port 2>/dev/null || echo "/dev/ttyGS0")
+
+    # Create emulator configuration file
+    mkdir -p "$(dirname "$EMULATOR_CONF")"
+    cat > "$EMULATOR_CONF" <<EOF
+[RPITalk]
+# The  port to listen on.
+# This should be /dev/ttyGS0 if your Raspberry Pi supports gadget mode, /devttyS0 if you are using a serial USB to converter.
+port=$PORT
+
+# Which synth to emulate.
+# Either dectlk for DECtalk Express or ltlk for LiteTalk.
+emulate=$EMULATION
+
+# Debug level.
+# Set to 0 (zero) to turn off debugging. 3 for the highest level.
+debug=0
+EOF
+
+    # Create gadget configuration if using the OTG device
+    if [ "$PORT" = "/dev/ttyGS0" ]; then
+        mkdir -p "$(dirname "$GADGET_CONF")"
+
+        # Set product-specific values
+        case "$EMULATION" in
+            dectlk)
+                PRODUCT_ID="0x0104"
+                SERIAL="rpitalk-dectalk-001"
+                PRODUCT="RPITalk DECtalk Emulator"
+                ;;
+            ltlk)
+                PRODUCT_ID="0x0105"
+                SERIAL="rpitalk-litetalk-001"
+                PRODUCT="RPITalk LiteTalk Emulator"
+                ;;
+            *)
+                PRODUCT_ID="0x0104"
+                SERIAL="rpitalk-unknown-001"
+                PRODUCT="RPITalk Emulator"
+                ;;
+        esac
+
+        cat > "$GADGET_CONF" <<EOF
+#
+# RPITalk USB Gadget Configuration
+#
+# This file controls how the Raspberry Pi identifies itself
+# to the host computer over USB when acting as a speech
+# synthesizer emulator.
+#
+# By changing the PRODUCT_ID and PRODUCT string, the Pi can
+# pretend to be different hardware synthesizers (e.g. DECtalk
+# or LiteTalk).  The host's udev rules can then load the
+# correct Speakup driver based on these values.
+#
+
+# Enable or disable USB gadget mode entirely.
+# Set to 0 (zero) to disable.
+ENABLE_GADGET=1
+
+# USB Vendor ID.
+# All RPITalk devices should normally use the same vendor ID.
+VENDOR_ID=0x1d6b
+
+# USB Product ID.
+# 0x0104 for DECtalk emulation, 0x0105 for LiteTalk.
+PRODUCT_ID=$PRODUCT_ID
+
+# USB serial number string.
+SERIAL="$SERIAL"
+
+# USB manufacturer string (human-readable).
+MANUFACTURER="RPITalk Development Team"
+
+# USB product string (shown by lsusb and in kernel logs).
+PRODUCT="$PRODUCT"
+
+# Configuration name string (normally not critical).
+CONFIGURATION_NAME="RPITalk Synth Config"
+EOF
+    fi
+
+    # Reload systemd and enable/start the service
+    systemctl daemon-reload
+    systemctl enable $SERVICE || true
+    systemctl start $SERVICE || true
+
+    # Warn if Speech Dispatcher backend is missing
+    if ! dpkg -s speech-dispatcher >/dev/null 2>&1; then
+        echo "WARNING: speech-dispatcher is not installed."
+        echo "rpitalk requires a TTS backend like speech-dispatcher + espeak-ng."
+    fi
+
+fi
+
+# Handle remove/purge if needed
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+    systemctl stop $SERVICE || true
+    systemctl disable $SERVICE || true
+fi
+
+#DEBHELPER#
+
+exit 0
+

@@ -9,13 +9,19 @@ Package: rpitalk
 Architecture: all
 Depends: ${python3:Depends}, ${misc:Depends}, speech-dispatcher, python3-speechd
 Suggests: speech-dispatcher-espeak-ng, espeak-ng
-Description: DECtalk-compatible speech synthesizer emulator for Raspberry Pi
+Description: Hardware speech synthesizer emulator for Raspberry Pi
  rpitalk provides software for turning a Raspberry Pi into a
- DECtalk-compatible hardware speech synthesizer.
+ legacy hardware speech synthesizer emulator.
  .
- When run on a Raspberry Pi with an OTG (gadget) USB port,
- this package emulates the DECtalk command protocol and uses Speech
- Dispatcher as a backend, allowing a screen  reader on a
- host computer to produce speech through a modern text-to-speech
- engine.
+ It supports emulation of DECtalk-compatible and LiteTalk-compatible
+ devices and implements their serial command protocols.
  .
+ rpitalk is intended for use on a Raspberry Pi with a USB OTG (gadget) port,
+ where it listens on a virtual serial device and uses Speech Dispatcher as a
+ backend, allowing screen readers or other software on a host computer to
+ produce speech through a modern text-to-speech engine. It can also be used
+ on other machines with a standard serial port if desired.
+ .
+ The emulator may be configured using /etc/rpitalk/emulator.conf and
+ supports multiple emulation modes selectable at runtime.
+

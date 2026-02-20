@@ -1,6 +1,7 @@
 .TH RPITALK-EMULATOR 1 "February 2026" "rpitalk" "User Commands"
+
 .SH NAME
-rpitalk-emulator \- Raspberry Pi DECtalk-compatible speech synthesizer emulator
+rpitalk-emulator \- Raspberry Pi hardware speech synthesizer emulator
 
 .SH SYNOPSIS
 .B rpitalk-emulator
@@ -11,13 +12,18 @@ rpitalk-emulator \- Raspberry Pi DECtalk-compatible speech synthesizer emulator
 provides software for turning a Raspberry Pi into a DECtalk-compatible
 hardware speech synthesizer.
 
-It emulates the DECtalk serial command protocol and uses Speech Dispatcher
-as a backend, allowing legacy software designed for DECtalk hardware to
-produce speech through modern text-to-speech engines.
+It emulates legacy hardware speech synthesizers and uses Speech Dispatcher
+as a backend, allowing older software designed for DECtalk or LiteTalk
+devices to produce speech through modern text-to-speech engines.
 
 The emulator listens on a serial device provided by the Raspberry Pi USB
-OTG (gadget) interface and processes incoming DECtalk-style commands to
+OTG (gadget) interface and processes incoming synth-style commands to
 generate speech output.
+
+At startup,
+.B rpitalk-emulator
+reads a system configuration file to determine default settings. Any
+command-line options override the configuration file.
 
 .SH OPTIONS
 .TP
@@ -25,6 +31,18 @@ generate speech output.
 Serial port device to use.
 Default is \fB/dev/ttyGS0\fR, which is typically created by the USB OTG
 (gadget) serial driver.
+
+.TP
+.BR \-e ", " \-\-emulate " " \fIdectlk|ltlk\fR
+Select which hardware synthesizer to emulate.
+.RS
+.TP
+.B dectlk
+Emulate a DECtalk-compatible device (default).
+.TP
+.B ltlk
+Emulate a LiteTalk-compatible device.
+.RE
 
 .TP
 .BR \-d ", " \-\-debug " " \fIlevel\fR
@@ -38,14 +56,37 @@ Run a built-in test instead of starting the emulator.
 .RS
 .TP
 .B speech
-Perform a speech synthesis test.
+Perform a speech synthesis test using the selected emulation type.
 .TP
 .B conn
-Perform a serial connection test.
+Perform a serial connection test on the selected serial device.
 .RE
 
+.SH CONFIGURATION FILE
+The file
+.I /etc/rpitalk/emulator.conf
+is read at startup if it exists.
+
+It must contain a section named
+.B [RPITalk]
+and may define the following keys:
+
+.TP
+.B port
+Serial port device to use (for example, \fB/dev/ttyGS0\fR).
+
+.TP
+.B emulate
+Which synthesizer to emulate: \fBdectlk\fR or \fBltlk\fR.
+
+.TP
+.B debug
+Debug level (integer, 0 disables debugging).
+
+Command-line options override values from the configuration file.
+
 .SH EXAMPLES
-Start the emulator using the default USB gadget serial device:
+Start the emulator using defaults:
 .PP
 .nf
 rpitalk-emulator
@@ -55,6 +96,12 @@ Use a different serial device:
 .PP
 .nf
 rpitalk-emulator --port /dev/ttyUSB0
+.fi
+
+Emulate a LiteTalk device:
+.PP
+.nf
+rpitalk-emulator --emulate ltlk
 .fi
 
 Run the speech test:
@@ -73,6 +120,10 @@ rpitalk-emulator --debug 1
 .TP
 .I /dev/ttyGS0
 Default USB OTG gadget serial device.
+
+.TP
+.I /etc/rpitalk/emulator.conf
+System-wide configuration file.
 
 .SH SEE ALSO
 .BR speech-dispatcher (1),

@@ -1,17 +1,13 @@
 [Unit]
 Description=RPITalk Emulator
-After=sound.target
-Wants=sound.target
+After=speech-dispatcher.service sound.target
+Requires=speech-dispatcher.service
 
 [Service]
-Type=simple
 ExecStart=/usr/bin/rpitalk-emulator
 Restart=always
-RestartSec=3
-StandardOutput=journal
-StandardError=journal
 Environment=PYTHONUNBUFFERED=1
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
 

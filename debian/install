@@ -1,7 +1,16 @@
-rpitalk-emulator        usr/bin/
-dectalkemulator.py    usr/lib/python3/dist-packages/
-rpitalk.py             usr/lib/python3/dist-packages/
-rpitalk.service        usr/lib/systemd/user/
-rpitalk-emulator.1 usr/share/man/man1/
-rpitalk.service.1 usr/share/man/man1/
+dectalkemulator.py        usr/lib/python3/dist-packages/
+hardwaresynthemulator.py usr/lib/python3/dist-packages/
+litetalkemulator.py      usr/lib/python3/dist-packages/
+
+rpitalk-emulator         usr/bin/
+
+rpitalk-emulator.1       usr/share/man/man1/
+
+emulator.conf            etc/rpitalk/
+gadget.conf              etc/rpitalk/
+
+gadget.sh                usr/lib/rpitalk/
+
+rpitalk.service          usr/lib/systemd/system/
+rpitalk-gadget.service   usr/lib/systemd/system/
 
