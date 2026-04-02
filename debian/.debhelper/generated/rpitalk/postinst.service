@@ -1,15 +1,3 @@
-#!/bin/sh
-set -e
-
-# Automatically added by dh_python3
-if command -v py3compile >/dev/null 2>&1; then
-	py3compile -p rpitalk 
-fi
-if command -v pypy3compile >/dev/null 2>&1; then
-	pypy3compile -p rpitalk  || true
-fi
-
-# End automatically added section
 # Automatically added by dh_installsystemd/13.24.2ubuntu1
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
 	# The following line should be removed in trixie or trixie+1

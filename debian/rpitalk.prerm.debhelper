@@ -1,6 +1,6 @@
 
 # Automatically added by dh_python3
-if command -v py3clean >/dev/null 2>&1 && python3 -c 'pass' 2>/dev/null; then
+if command -v py3clean >/dev/null 2>&1; then
 	py3clean -p rpitalk 
 else
 	dpkg -L rpitalk | sed -En -e '/^(.*)\/(.+)\.py$/s,,rm "\1/__pycache__/\2".*,e'

@@ -54,8 +54,8 @@ def parseArgs(defaults):
 
     parser.add_argument(
         "-p", "--port",
-        default=defaults.get("port", "/dev/ttyGS0"),
-        help=f"Serial port device (default: {defaults.get('port', '/dev/ttyGS0')})"
+        default=defaults.get("port", "ttyGS0"),
+        help=f"Serial port device (default: {defaults.get('port', 'ttyGS0')})"
     )
 
     parser.add_argument(

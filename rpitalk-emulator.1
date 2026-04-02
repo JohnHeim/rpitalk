@@ -28,8 +28,8 @@ command-line options override the configuration file.
 .SH OPTIONS
 .TP
 .BR \-p ", " \-\-port " " \fIdevice\fR
-Serial port device to use.
-Default is \fB/dev/ttyGS0\fR, which is typically created by the USB OTG
+Serial port device name to use (for example, \fBttyGS0\fR or \fBttyUSB0\fR).
+Default is \fBttyGS0\fR, which is typically created by the USB OTG
 (gadget) serial driver.
 
 .TP
@@ -73,7 +73,7 @@ and may define the following keys:
 
 .TP
 .B port
-Serial port device to use (for example, \fB/dev/ttyGS0\fR).
+Serial port device name to use (for example, \fBttyGS0\fR).
 
 .TP
 .B emulate
@@ -95,7 +95,7 @@ rpitalk-emulator
 Use a different serial device:
 .PP
 .nf
-rpitalk-emulator --port /dev/ttyUSB0
+rpitalk-emulator --port ttyUSB0
 .fi
 
 Emulate a LiteTalk device:
@@ -119,7 +119,7 @@ rpitalk-emulator --debug 1
 .SH FILES
 .TP
 .I /dev/ttyGS0
-Default USB OTG gadget serial device.
+Default USB OTG gadget serial device (accessed internally when port is set to \fBttyGS0\fR).
 
 .TP
 .I /etc/rpitalk/emulator.conf
@@ -137,4 +137,3 @@ Copyright \(co 2026 John G Heim.
 
 This program is free software; you may redistribute it and/or modify it
 under the terms of the GNU General Public License version 3 or later.
-

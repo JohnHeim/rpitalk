@@ -1,0 +1,126 @@
+.TH RPITALK-CONFIG 8 "February 2026" "rpitalk" "System Administration Commands"
+
+.SH NAME
+rpitalk-config \- interactive configuration tool for RPITalk emulator
+
+.SH SYNOPSIS
+.B rpitalk-config
+
+.SH DESCRIPTION
+.B rpitalk-config
+is an interactive configuration script for the RPITalk hardware speech
+synthesizer emulator.
+
+It reads default values from
+.I /etc/rpitalk/emulator.conf
+and prompts the user to select:
+
+.RS
+.IP \(bu 2
+which synthesizer to emulate (DECtalk or LiteTalk)
+.IP \(bu
+which serial port to use
+.IP \(bu
+the debug verbosity level
+.RE
+
+After collecting user input,
+.B rpitalk-config
+updates the following configuration files while preserving comments:
+
+.RS
+.IP \(bu 2
+.I /etc/rpitalk/emulator.conf
+.IP \(bu
+.I /etc/rpitalk/gadget.conf
+.RE
+
+If the selected port is
+.BR ttyGS0 ,
+USB gadget mode is enabled automatically in
+.I /etc/rpitalk/gadget.conf .
+For other ports, gadget mode is disabled.
+
+.SH CONFIGURATION FILES
+
+.TP
+.I /etc/rpitalk/emulator.conf
+Main configuration file for the emulator. The following keys are updated:
+
+.RS
+.TP
+.B emulate
+Which synthesizer to emulate: \fBdectlk\fR or \fBltlk\fR.
+.TP
+.B port
+Serial port device name (for example, \fBttyGS0\fR or \fBttyUSB0\fR).
+.TP
+.B debug
+Debug verbosity level (0 to 3).
+.RE
+
+.TP
+.I /etc/rpitalk/gadget.conf
+USB gadget configuration file. The following keys are updated:
+
+.RS
+.TP
+.B ENABLE_GADGET
+Set to 1 if the selected port is \fBttyGS0\fR, otherwise 0.
+.TP
+.B PRODUCT_ID
+USB product ID corresponding to the selected emulation type.
+.TP
+.B SERIAL
+USB serial number string.
+.TP
+.B PRODUCT
+USB product description string.
+.RE
+
+.SH INTERACTIVE OPERATION
+When run, the program:
+
+.RS
+.IP 1. 3
+Reads defaults from
+.I /etc/rpitalk/emulator.conf .
+.IP 2.
+Prompts for an emulation type (1 = DECtalk, 2 = LiteTalk).
+.IP 3.
+Prompts for a serial port name.
+.IP 4.
+Prompts for a debug level (0 to 3).
+.IP 5.
+Writes the updated values to the configuration files.
+.RE
+
+.SH EXAMPLES
+Run the configuration tool:
+
+.PP
+.nf
+rpitalk-config
+.fi
+
+.SH FILES
+.TP
+.I /etc/rpitalk/emulator.conf
+RPITalk emulator configuration file.
+
+.TP
+.I /etc/rpitalk/gadget.conf
+RPITalk USB gadget configuration file.
+
+.SH SEE ALSO
+.BR rpitalk-emulator (1),
+.BR speech-dispatcher (1)
+
+.SH AUTHOR
+John G Heim <jheim@math.wisc.edu>
+
+.SH COPYRIGHT
+Copyright \(co 2026 John G Heim.
+
+This program is free software; you may redistribute it and/or modify it
+under the terms of the GNU General Public License version 3 or later.

@@ -1,2 +1,2 @@
-rpitalk_0.9_all.deb sound optional
-rpitalk_0.9_amd64.buildinfo sound optional
+rpitalk_1.2_all.deb sound optional architecture=all
+rpitalk_1.2_amd64.buildinfo sound optional

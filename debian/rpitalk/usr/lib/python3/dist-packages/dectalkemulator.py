@@ -21,104 +21,45 @@ Emulate a DECtalk hardware synth
 
 import logging
 import os
+import re
 import speechd
 import sys
+from hardwaresynthemulator import HardwareSynthEmulator
 
-class DECtalkEmulator:
+class DECtalkEmulator(HardwareSynthEmulator):
 
-    Identity  = "RPItalk"
-    Version = "0.9"
-    DeviceIdString = f"{Identity} {Version}\r"
-    MaxBufferSize = 4096
-
+    FlushChar = 0x01
     BreakChar = 0x03
     IndexChar = 0x0B
+    ReturnChar = 0x0D
+    XOnChar = 0x11
+    XOffChar = 0x13
+    CancelChar = 0x18
+    EscapeChar = 0x1B
     CommandStart = 0x5B    # left bracket "["
+    BackslashChar = 0x5C    # \ backslash
     CommandEnd = 0x5D    # right bracket "]"
 
-    def __init__(self, rate=400, pitch=200, volume=50, debug=0):
+    def __init__(self, serialDevice,debug=0, rate=400, pitch=100, punctuation="n", volume=50):
+        super().__init__(serialDevice, debug)   # call Parent.__init__
 
         self.rate = rate
         self.pitch = pitch
+        self.punctuation = punctuation
         self.volume = volume
-        self.g5 = None
-        self.punctuation = None
+        self.g5 = 0
+        self.range =0
 
         self .commandMode = None
-        self.characterBuffer = bytearray()
-
-        self.debugLevel = int(os.getenv("DEBUG", f"{debug}"))
-        if self.debugLevel >= 2:
-            self.logLevel = logging.DEBUG
-        elif self.debugLevel >= 1:
-            self.logLevel = logging.INFO
-        else:
-            self.logLevel = logging.WARNING
-        logging.basicConfig(level=self.logLevel, format="%(message)s")
-        logging.debug(f"Debug  level set to  {self.logLevel}.")
-
-        message = f"Starting {self.Identity}, version {self.Version}."
-        try:
-            self.speechClient = speechd.SSIPClient(self.Identity)
-        except Exception as error:
-            logging.critical(f"Error initializing Speech Dispatcher: {error}")
-            exit()
+        self.escapeSequence = False
+        self.escapePattern = re.compile(r'P\d;\d+;\d+z')
 
         self.setSpeechRate(f"{rate}")
         self.setSpeechPitch(f"{pitch}")
+        self.setSpeechPunctuation(f"{punctuation}")
         self.setSpeechVolume(f"{volume}")
-        self.speak(message)
-        logging.info(message)
 
-    #=== Speech  Functions ===#
-    def endSpeech(self):
-        self.speechClient.stop()
-        self.speechClient.close()
-
-    def convertWithinRange(self, oldValue, r1m, r1x, r2m=-100, r2x=100):
-        """
-        Takes a value in one range(like  75 to 650 (the acceptable range for speech rate for a  DECtalk)
-        and mathematically converts it to  another range, (like -100 to 100, the range of values for Speech Dispatcher).
-        """
-        newValue = int((oldValue - (r1x - r1m)/2 - r1m) / ((r1x - r1m)/(r2x - r2m)) + (r2x +r2m)/2)
-        return max(r2m, min(r2x, newValue))
-
-    def setSpeechPitch(self, strValue):
-        """
-        Converts the DECtalk average speech pitch, a number in mHz btween 50 and 350,
-        to a Speech Dispatcher pitch, a number between -100 and +100,
-        and sets the Speech Dispatcher speech pitch.
-        """
-        if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.pitch + int(strValue)
-        else:
-            newValue = int(strValue)
-
-        setValue = self.convertWithinRange(newValue + 40, 50, 200)
-        try:
-            self.speechClient.set_pitch(setValue)
-            self.pitch = newValue
-            logging.info(f"Set speech pitch to {newValue} ({setValue}).")
-        except Exception as error:
-            logging.warning(f"Error setting pitch to {newValue} ({setValue}): {error}")
-
-    def setSpeechRange(self, strValue):
-        """
-        Sets the range of the speech pitch.
-        The value is a percentage in both DECtalk and Speech Dispatcher so no conversion is necessary.
-        """
-        if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.pitch + int(strValue)
-        else:
-            newValue = int(strValue)
-        setValue = max(0, min(100, newValue))
-        try:
-            self.speechClient.set_pitch_range(setValue)
-            self.range = newValue
-            logging.info(f"Set speech pitch range to {newValue}.")
-        except Exception as error:
-            logging.warning(f"Error setting pitch range to {newValue}: {error}")
-
+    #===Speech functions ===#
     def setSpeechRate(self, strValue):
         """
         Converts the DECtalk speech rate, a number btween 75 and 650
@@ -126,9 +67,9 @@ class DECtalkEmulator:
         and sets the Speech Dispatcher speech rate.
         """
         if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.rate + int(strValue)
+            newValue = self.rate + self.toInteger(strValue, 0)
         else:
-            newValue = int(strValue)
+            newValue = self.toInteger(strValue, self.rate)
         setValue = self.convertWithinRange(newValue, 75, 650)
         try:
             self.speechClient.set_rate(setValue)
@@ -136,6 +77,47 @@ class DECtalkEmulator:
             logging.info(f"Set speech rate to {newValue} ({setValue}).")
         except Exception as error:
             logging.warning(f"Error setting rate to {newValue} ({setValue}): {error}")
+
+    def setSpeechPitch(self, strValue):
+        """
+        Converts the DECtalk speech pitch, a number in mHz btween 50 and 350,
+        to a Speech Dispatcher pitch, a number between -100 and +100,
+        and sets the Speech Dispatcher speech pitch.
+        """
+        if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
+            newValue = self.pitch + self.toInteger(strValue, 0)
+        else:
+            newValue = self.toInteger(strValue, self.pitch)
+
+        # Klooge for Speakup:
+        # Actual range is 50 to 350
+        #  but by  setting range to 50 to 180,
+        # we put the default, 122,  right in the middle
+        # and we make the pitch changes more pronounced.
+        setValue = self.convertWithinRange(newValue , 50, 180)
+        try:
+            self.speechClient.set_pitch(setValue)
+            self.pitch = newValue
+            logging.info(f"Set speech pitch to {newValue} ({setValue}).")
+        except Exception as error:
+            logging.warning(f"Error setting pitch to {newValue} ({setValue}): {error}")
+
+    def setSpeechPitchRange(self, strValue):
+        """
+        Sets the range of the speech pitch.
+        The value is a percentage in both DECtalk and Speech Dispatcher so no conversion is necessary.
+        """
+        if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
+            newValue = self.range + self.toInteger(strValue, 0)
+        else:
+            newValue = self.toInteger(strValue, self.range)
+        setValue = max(0, min(100, newValue))
+        try:
+            self.speechClient.set_pitch_range(setValue)
+            self.range = newValue
+            logging.info(f"Set speech pitch range to {newValue}.")
+        except Exception as error:
+            logging.warning(f"Error setting pitch range to {newValue}: {error}")
 
     def setSpeechVolume(self, strValue):
         """
@@ -178,10 +160,10 @@ class DECtalkEmulator:
         Map DECtalk punctuation level to Speech Dispatcher punctuation level and set the value.
         """
         mapping = {
-            "n": "none",
-            "s": "some",
-            "a":  "all",
-            "p": "none",   # closest approximation
+            "n": speechd.PunctuationMode.NONE,
+            "s": speechd.PunctuationMode.SOME,
+            "a": speechd.PunctuationMode.ALL,
+            "p": speechd.PunctuationMode.NONE,   # closest approximation
         }
 
         key =strValue.lower()[:1]
@@ -232,9 +214,16 @@ class DECtalkEmulator:
             self.speechClient.set_voice(voice)
             logging.info(f"Set voice to {voice}, ID {voiceID}.")
 
-    def speak(self, text):
-        if text.strip():
-            self.speechClient.speak(text)
+    def safeSpeak(self):
+            text = self.received.decode(errors="ignore")
+            # Check if an escape sequence snuck into the text
+            if self.escapePattern.fullmatch(text):
+                self.escapeSequence = True
+            else:
+                text.strip()
+                self.speak(text)
+                logging.debug(f"Said '{text}' ...")
+            self.received.clear()
 
     #=== Emulation Functions ===#
     def processCommands(self, buffer):
@@ -272,7 +261,7 @@ class DECtalkEmulator:
                     self.setSpeechG5(val)
 
                 elif sbc == "pr" and val != "":
-                    self.setSpeechRange(val)
+                    self.setSpeechPitchRange(val)
 
             elif cmd[0] == "n" and cmd[1] >= "0" and cmd[1] <= "9":
                 self.setVoiceByID(ord(cmd[1]) - ord("0"))
@@ -281,58 +270,63 @@ class DECtalkEmulator:
                 logging.debug(f"Unprocessed command '{command}'/{cmd}.")
 
     def parse(self, data):
-        response = bytearray()
 
         for byte in data:
+            # Flag to indicate when to speak buffered text
+            vocalize = False
+
             # This bloc of code processes the byte.  There is another comment at the end of the bloc of code.
-            if byte == self.BreakChar:
-                self.speechClient.cancel()
-                response.append(0x01)
+            # Three printable chars are special, \, [, and ]
+            if byte == self.BackslashChar:
+                pass
 
-            elif byte == self.IndexChar:
-                response.append(self.IndexChar)
-
+            # Left bracket char starts command sequence
             elif byte == self.CommandStart:
                 self.commandMode = True
+                self.escapeSequence = False
+                vocalize = True
 
+            # Right bracket char ends command sequence (although it seems to appear for no reason  occasionally.
             elif byte == self.CommandEnd:
-                if self.characterBuffer:
-                    self.processCommands(self.characterBuffer.decode("utf-8"))
-                    self.characterBuffer.clear()
-                self.commandMode = False
+                if self.commandMode:
+                    if self.received:
+                        self.processCommands(self.received.decode("utf-8"))
+                        self.received.clear()
+                    self.commandMode = False
 
-            # Printable char
-            elif 0x20 <= byte <= 0x7E:
-                self.characterBuffer.append(byte)
+            elif self.isPrintable(byte):
+                self.received.append(byte)
+                if len(self.received) >= self.MaxBufferSize:
+                    vocalize = not  self.commandMode
+
+            # Process non-printable characters ...
+            elif byte == self.EscapeChar:
+                if self.escapeSequence:
+                    self.received.clear()
+                    self.response.append(self.FlushChar)
+                    self.escapeSequence = False
+                    print("end escape")
+                else:
+                    self.escapeSequence = True
+                    vocalize = True
+                    print("escape")
+
+            elif byte == self.BreakChar or  byte == self.CancelChar:
+                if self.cancelSpeech():
+                    self.response.append(self.FlushChar)
+
+            elif byte == self.IndexChar:
+                self.response.append(self.IndexChar)
+                vocalize = True
             # End of byte processing code block.
 
-            if byte == self.BreakChar or byte == self.IndexChar or byte == self.CommandStart or len(self.characterBuffer) >= self.MaxBufferSize:
-                self.speak(self.characterBuffer.decode(errors="ignore"))
-                self.characterBuffer.clear()
-        return  response
-    def testSpeech(self):
-        """
-        Reads user input and sends it to Speech Dispatcher.
-        """
-        print("Type text and press Enter to speak.")
-        print("Press Ctrl+D or Ctrl+C to exit.")
+            if vocalize:
+                self.safeSpeak()
 
-        try:
-            while True:
-                try:
-                    text = input("> ")
-                    data = text.encode('ascii') + bytes([self.IndexChar])
-                    response = self.parse(data)
-                    logging.info(f"Response is '{response}'.")
-                except EOFError:
-                    print()
-                    break
-
-        except KeyboardInterrupt:
-            print()
-
-        finally:
-            self.endSpeech()
 """
 End of DECtalkEmulator class
 """
+# Uncomment to test
+# em = DECtalkEmulator("stdin")
+# em.parse(b"Hello world[:xx]")
+
