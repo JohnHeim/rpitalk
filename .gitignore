@@ -1,0 +1,21 @@
+# Debian build artifacts
+*.deb
+*.buildinfo
+*.changes
+*.dsc
+*.tar.gz
+
+# Debhelper / packaging temp files
+debian/.debhelper/
+debian/files
+debian/*substvars
+debian/*debhelper*
+debian/rpitalk/
+
+# Editor junk
+*~
+*.swp
+
+# Python
+__pycache__/
+*.pyc
