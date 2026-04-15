@@ -1,4 +1,4 @@
-rpitalk (1.2) questing; urgency=medium
+rpitalk (1.2) unstable; urgency=medium
 
   * Added Makefile and removed debian/install file
   * Moved man pages into debian/manpages/
@@ -7,7 +7,7 @@ rpitalk (1.2) questing; urgency=medium
 
  -- John G Heim <jheim@math.wisc.edu>  Tue, 31 Mar 2026 19:29:36 -0500
 
-rpitalk (1.1) stable; urgency=medium
+rpitalk (1.1) unstable; urgency=medium
 
   * Improve DECtalk emulation compatibility with JAWS for DOS.
   * Fix serial handling to better match expected DECtalk behavior.
@@ -16,7 +16,7 @@ rpitalk (1.1) stable; urgency=medium
 
  -- John G. Heim <jheim@math.wisc.edu>  Sat, 14 Mar 2026 11:58:22 -0500
 
-rpitalk (1.0) stable; urgency=medium
+rpitalk (1.0) unstable; urgency=medium
 
   * Initial Debian package (Closes: #1127568)
 
