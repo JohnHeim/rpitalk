@@ -151,21 +151,27 @@ class LiteTalkEmulator(HardwareSynthEmulator):
         Map LiteTalk voice ID to Speech Dispatcher voice ID and set voice.
         """
         mapping = [
-            "default",
             "MALE1",     # Paul
             "MALE2",   # Harry
             "MALE3",   # Frank
+            "MALE1",     # Paul
             "FEMALE1",   # Betty
             "FEMALE2",   # Ursula
             "FEMALE3",   # Rita
+            "FEMALE1",   # Betty
             "CHILD_MALE",   # Kit
             "CHILD_FEMALE",   # Wendy
         ]
 
-        if voiceID >= 0 and voiceID <= 7:
-            voice = mapping[voiceID]
-            self.speechClient.set_voice(voice)
-            logging.info(f"Set voice to {voice}, ID {voiceID}.")
+        if voiceID < 0 or voiceID >= len(mapping):
+            raise ValueError(f"Invalid LiteTalk voice ID: {voiceID}.")
+        else:
+            setValue = mapping[voiceID]
+            try:
+                self.speechClient.set_voice(setValue)
+                logging.info(f"Set voice to {voiceID} ({setValue}).")
+            except Exception as error:
+                logging.warning(f"Error setting  voice to {voiceID} ({setValue}): {error}")
 
     def safeSpeak(self):
             text = self.received.decode(errors="ignore")
