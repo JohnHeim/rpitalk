@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 John Heim
+# Copyright (C) 2026 John G Heim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +13,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# Note: camelCase naming is used throughout this module because this code
+# is written and maintained by blind developers. camelCase is significantly
+# easier to follow when using a screen reader.
 
 """
 LiteTalkEmulator
@@ -20,9 +24,7 @@ Emulate a LiteTalk hardware synth
 """
 
 import logging
-import os
 import speechd
-import sys
 from hardwaresynthemulator import HardwareSynthEmulator
 
 class LiteTalkEmulator(HardwareSynthEmulator):
@@ -41,15 +43,15 @@ class LiteTalkEmulator(HardwareSynthEmulator):
     RateCommand = 0x53
     VolumeCommand = 0x56
 
-    def __init__(self, serialDevice, debug=0, rate=5, pitch=50, punctuation="n", volume=5, range=5):
+    def __init__(self, serialDevice, debug=0, rate=5, pitch=50, punctuation=0, volume=5, prange=5):
         super().__init__(serialDevice, debug)   # call Parent.__init__
 
         self.rate = rate
         self.pitch = pitch
         self.punctuation = punctuation
         self.volume = volume
-        self.range = range
-        self .commandMode = None
+        self.prange = prange
+        self.commandMode = False
         self.isCancelled = False
 
         self.setSpeechRate(f"{rate}")
@@ -100,13 +102,13 @@ class LiteTalkEmulator(HardwareSynthEmulator):
         converts it to Speech Dispatcher value and sets the range of the speech pitch.
         """
         if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.range + self.toIntegert(strValue, 0)
+            newValue = self.prange + self.toInteger(strValue, 0)
         else:
-            newValue = self.toInteger(strValue, self.range)
+            newValue = self.toInteger(strValue, self.prange)
         setValue = self.convertWithinRange(newValue , 0, 9)
         try:
             self.speechClient.set_pitch_range(setValue)
-            self.range = newValue
+            self.prange = newValue
             logging.info(f"Set speech pitch range to {newValue} ({setValue}).")
         except Exception as error:
             logging.warning(f"Error setting pitch range to {newValue} ({setValue}): {error}")
@@ -118,7 +120,7 @@ class LiteTalkEmulator(HardwareSynthEmulator):
         and sets the  Speech dispatcher volume.
     """
         if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.volume + self.toInnteger(strValue, 0)
+            newValue = self.volume + self.toInteger(strValue, 0)
         else:
             newValue = self.toInteger(strValue, self.volume)
         setValue = self.convertWithinRange(newValue , 0, 9)
@@ -149,35 +151,27 @@ class LiteTalkEmulator(HardwareSynthEmulator):
     def setVoiceByID(self, voiceID):
         """
         Map LiteTalk voice ID to Speech Dispatcher voice ID and set voice.
+        Note: LiteTalk voices number from 0 to 7.
         """
         mapping = [
             "MALE1",     # Paul
             "MALE2",   # Harry
             "MALE3",   # Frank
-            "MALE1",     # Paul
             "FEMALE1",   # Betty
             "FEMALE2",   # Ursula
-            "FEMALE3",   # Rita
-            "FEMALE1",   # Betty
+            "FEMALE3",   # Wendy
             "CHILD_MALE",   # Kit
-            "CHILD_FEMALE",   # Wendy
+            "CHILD_FEMALE",   # Rita
         ]
 
         if voiceID < 0 or voiceID >= len(mapping):
             raise ValueError(f"Invalid LiteTalk voice ID: {voiceID}.")
-        else:
-            setValue = mapping[voiceID]
-            try:
-                self.speechClient.set_voice(setValue)
-                logging.info(f"Set voice to {voiceID} ({setValue}).")
-            except Exception as error:
-                logging.warning(f"Error setting  voice to {voiceID} ({setValue}): {error}")
-
-    def safeSpeak(self):
-            text = self.received.decode(errors="ignore")
-            self.speak(text)
-            logging.debug(f"Said '{text}' ...")
-            self.received.clear()
+        setValue = mapping[voiceID]
+        try:
+            self.speechClient.set_voice(setValue)
+            logging.info(f"Set voice to {voiceID} ({setValue}).")
+        except Exception as error:
+            logging.warning(f"Error setting  voice to {voiceID} ({setValue}): {error}")
 
     #=== Emulation Functions ===#
     def parse(self, data):
@@ -199,7 +193,7 @@ class LiteTalkEmulator(HardwareSynthEmulator):
                     self.commandMode = False
 
                 elif byte == self.IdCommand:
-                    self.response .append(self.DeviceIdString.encode("ascii") + b"\r")
+                    self.response  += self.DeviceIdString.encode("ascii") + b"\r"
                     self.commandMode = False
 
                 elif byte == self.IndexCommand:
@@ -239,7 +233,8 @@ class LiteTalkEmulator(HardwareSynthEmulator):
                     self.commandMode = False
 
                 elif byte == self.VoiceCommand:
-                    self.setVoiceByID(self.received[0] - ord("0"))
+                    voiceID = self.toInteger(self.received, 0)
+                    self.setVoiceByID(voiceID)
                     self.received.clear()
                     self.commandMode = False
 
@@ -256,11 +251,9 @@ class LiteTalkEmulator(HardwareSynthEmulator):
                 self.received.append(byte)
 
             if byte == 0x00 or byte == self.ReturnChar or byte == self.CommandCode or len(self.received) >= self.MaxBufferSize:
-                self.safeSpeak()
+                self.flushSpeech()
 
             # Klooge to keep from doing 2 or more cancel commands in a row
             self.isCancelled = (byte == self.CancelCommand)
+    # End  of LiteTalkEmulator class
 
-"""
-End  of LiteTalkEmulator class
-"""

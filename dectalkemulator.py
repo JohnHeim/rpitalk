@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 John Heim
+# Copyright (C) 2026 John G Heim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,17 +13,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+#
+# Note: camelCase naming is used throughout this module because this code
+# is written and maintained by blind developers. camelCase is significantly
+# easier to follow when using a screen reader.
 """
 DECtalkEmulator
 Emulate a DECtalk hardware synth
 """
 
 import logging
-import os
 import re
 import speechd
-import sys
 from hardwaresynthemulator import HardwareSynthEmulator
 
 class DECtalkEmulator(HardwareSynthEmulator):
@@ -40,7 +41,7 @@ class DECtalkEmulator(HardwareSynthEmulator):
     BackslashChar = 0x5C    # \ backslash
     CommandEnd = 0x5D    # right bracket "]"
 
-    def __init__(self, serialDevice,debug=0, rate=400, pitch=100, punctuation="n", volume=50):
+    def __init__(self, serialDevice, debug=0, rate=400, pitch=100, punctuation="n", volume=50):
         super().__init__(serialDevice, debug)   # call Parent.__init__
 
         self.rate = rate
@@ -48,9 +49,9 @@ class DECtalkEmulator(HardwareSynthEmulator):
         self.punctuation = punctuation
         self.volume = volume
         self.g5 = 0
-        self.range =0
+        self.prange = 0
 
-        self .commandMode = None
+        self.commandMode = False
         self.escapeSequence = False
         self.escapePattern = re.compile(r'P\d;\d+;\d+z')
 
@@ -62,7 +63,7 @@ class DECtalkEmulator(HardwareSynthEmulator):
     #===Speech functions ===#
     def setSpeechRate(self, strValue):
         """
-        Converts the DECtalk speech rate, a number btween 75 and 650
+        Converts the DECtalk speech rate, a number between 75 and 650
         to a Speech Dispatcher speech rate, a number between -100 and +100,
         and sets the Speech Dispatcher speech rate.
         """
@@ -94,7 +95,7 @@ class DECtalkEmulator(HardwareSynthEmulator):
         #  but by  setting range to 50 to 180,
         # we put the default, 122,  right in the middle
         # and we make the pitch changes more pronounced.
-        setValue = self.convertWithinRange(newValue , 50, 180)
+        setValue = self.convertWithinRange(newValue, 50, 180)
         try:
             self.speechClient.set_pitch(setValue)
             self.pitch = newValue
@@ -105,16 +106,17 @@ class DECtalkEmulator(HardwareSynthEmulator):
     def setSpeechPitchRange(self, strValue):
         """
         Sets the range of the speech pitch.
-        The value is a percentage in both DECtalk and Speech Dispatcher so no conversion is necessary.
+        The value is a percentage in both DECtalk and Speech Dispatcher.
         """
         if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.range + self.toInteger(strValue, 0)
+            newValue = self.prange + self.toInteger(strValue, 0)
         else:
-            newValue = self.toInteger(strValue, self.range)
-        setValue = max(0, min(100, newValue))
+            newValue = self.toInteger(strValue, self.prange)
+        setValue = self.convertWithinRange(newValue, 0, 100)
+
         try:
             self.speechClient.set_pitch_range(setValue)
-            self.range = newValue
+            self.prange = newValue
             logging.info(f"Set speech pitch range to {newValue}.")
         except Exception as error:
             logging.warning(f"Error setting pitch range to {newValue}: {error}")
@@ -126,9 +128,9 @@ class DECtalkEmulator(HardwareSynthEmulator):
         and sets the Speech Dispatcher speech volume.
         """
         if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.volume + int(strValue)
+            newValue = self.volume + self.toInteger(strValue, 0)
         else:
-            newValue = int(strValue)
+            newValue = self.toInteger(strValue, self.volume)
         setValue = self.convertWithinRange(newValue, 0, 100)
         try:
             self.speechClient.set_volume(setValue)
@@ -144,13 +146,13 @@ class DECtalkEmulator(HardwareSynthEmulator):
         and sets the Speech Dispatcher speech volume.
         """
         if strValue and (strValue[0] == 0x2B or strValue[0] == 0x2D):
-            newValue = self.g5 + int(strValue)
+            newValue = self.g5 + self.toInteger(strValue, 0)
         else:
-            newValue = int(strValue)
+            newValue = self.toInteger(strValue, self.g5)
         setValue = self.convertWithinRange(newValue, 60, 86)
         try:
             self.speechClient.set_volume(setValue)
-            self.volume = newValue
+            self.g5 = newValue
             logging.info(f"Set design voice g5 value to {newValue} ({setValue}).")
         except Exception as error:
             logging.warning(f"Error setting g5 value to {newValue} ({setValue}): {error}")
@@ -166,17 +168,17 @@ class DECtalkEmulator(HardwareSynthEmulator):
             "p": speechd.PunctuationMode.NONE,   # closest approximation
         }
 
-        key =strValue.lower()[:1]
+        key = strValue.lower()[:1]
         if key not in mapping:
             raise ValueError(f"Invalid DECtalk punctuation level: {strValue}, ({key}).")
-        else:
-            setValue = mapping[key]
-            try:
-                self.speechClient.set_punctuation(setValue)
-                self.punctuation = key
-                logging.info(f"Set punctuation to {key} ({setValue}).")
-            except Exception as error:
-                logging.warning(f"Error setting  punctuation to {key} ({setValue}): {error}")
+
+        setValue = mapping[key]
+        try:
+            self.speechClient.set_punctuation(setValue)
+            self.punctuation = key
+            logging.info(f"Set punctuation to {key} ({setValue}).")
+        except Exception as error:
+            logging.warning(f"Error setting punctuation to {key} ({setValue}): {error}")
 
     def setVoiceByName(self, voiceName):
         """
@@ -186,7 +188,7 @@ class DECtalkEmulator(HardwareSynthEmulator):
         mapping = {
             "p": 1
         }
-        key =voiceName.lower()[:1]
+        key = voiceName.lower()[:1]
         if key not in mapping:
             raise ValueError(f"Invalid DECtalk voice name: {voiceName}, ({key}).")
         else:
@@ -195,39 +197,45 @@ class DECtalkEmulator(HardwareSynthEmulator):
 
     def setVoiceByID(self, voiceID):
         """
+        Map DECtalk voice ID to Speech Dispatcher voice ID and set voice.
+        Note: DECtalk voices number 0 through 9.
         """
         mapping = [
-            "default",
+            "MALE1",     # Paul
             "MALE1",     # Paul
             "MALE2",   # Harry
             "MALE3",   # Frank
-            "MALE3",   # Dennis
-            "CHILD_MALE",   # Kit
+            "FEMALE1",   # Betty
             "FEMALE1",   # Betty
             "FEMALE2",   # Ursula
-            "FEMALE3",   # Rita
-            "CHILD_FEMALE",   # Wendy
+            "FEMALE3",   # Wendy
+            "CHILD_MALE",   # Kit
+            "CHILD_FEMALE",   # Rita
         ]
 
-        if voiceID >= 0 and voiceID <= 9:
-            voice = mapping[voiceID]
-            self.speechClient.set_voice(voice)
-            logging.info(f"Set voice to {voice}, ID {voiceID}.")
+        if voiceID < 0 or voiceID >= len(mapping):
+            raise ValueError(f"Invalid DECtalk voice ID: {voiceID}.")
+        setValue = mapping[voiceID]
+        try:
+            self.speechClient.set_voice(setValue)
+            logging.info(f"Set voice to {voiceID} ({setValue}).")
+        except Exception as error:
+            logging.warning(f"Error setting voice to {voiceID} ({setValue}): {error}")
 
-    def safeSpeak(self):
-            text = self.received.decode(errors="ignore")
+    def safeSpeech(self):
+        text = self.received.decode("utf-8", errors="replace").strip()
+        if text:
             # Check if an escape sequence snuck into the text
-            if self.escapePattern.fullmatch(text):
+            if self.escapePattern.search(text):
                 self.escapeSequence = True
             else:
-                text.strip()
                 self.speak(text)
-                logging.debug(f"Said '{text}' ...")
-            self.received.clear()
+                logging.debug("Said %r", text)
+        self.received.clear()
 
     #=== Emulation Functions ===#
     def processCommands(self, buffer):
-        logging.debug(f"Processing commands: [{buffer}]")
+        logging.debug("Processing commands: [%r]", buffer)
         commands = buffer.strip().split(":")
         for command in commands:
             if not command:
@@ -238,29 +246,29 @@ class DECtalkEmulator(HardwareSynthEmulator):
             cmd = parms[0][:2]
             val = parms[1]
 
-            if cmd == "ra" and val != "":
+            if cmd == "ra" and val is not None:
                 self.setSpeechRate(val)
 
-            elif cmd == "vo" and val != "":
+            elif cmd == "vo" and val is not None:
                 self.setSpeechVolume(val)
 
-            elif cmd == "pu" and val != "":
+            elif cmd == "pu" and val is not None:
                 self.setSpeechPunctuation(val)
 
-            elif cmd == "na" and val != "":
+            elif cmd == "na" and val is not None:
                 self.setVoiceByName(val)
 
-            elif cmd == "dv" and val != "":
+            elif cmd == "dv" and val is not None:
                 sbc = parms[1]
                 val = parms[2]
 
-                if sbc == "ap" and val != "":
+                if sbc == "ap" and val is not None:
                         self.setSpeechPitch(val)
 
-                elif sbc == "g5" and val != "":
+                elif sbc == "g5" and val is not None:
                     self.setSpeechG5(val)
 
-                elif sbc == "pr" and val != "":
+                elif sbc == "pr" and val is not None:
                     self.setSpeechPitchRange(val)
 
             elif cmd[0] == "n" and cmd[1] >= "0" and cmd[1] <= "9":
@@ -275,7 +283,7 @@ class DECtalkEmulator(HardwareSynthEmulator):
             # Flag to indicate when to speak buffered text
             vocalize = False
 
-            # This bloc of code processes the byte.  There is another comment at the end of the bloc of code.
+            # This block of code processes the byte.  There is another comment at the end of the bloc of code.
             # Three printable chars are special, \, [, and ]
             if byte == self.BackslashChar:
                 pass
@@ -290,7 +298,7 @@ class DECtalkEmulator(HardwareSynthEmulator):
             elif byte == self.CommandEnd:
                 if self.commandMode:
                     if self.received:
-                        self.processCommands(self.received.decode("utf-8"))
+                        self.processCommands(self.received.decode("utf-8", errors="replace"))
                         self.received.clear()
                     self.commandMode = False
 
@@ -305,11 +313,9 @@ class DECtalkEmulator(HardwareSynthEmulator):
                     self.received.clear()
                     self.response.append(self.FlushChar)
                     self.escapeSequence = False
-                    print("end escape")
                 else:
                     self.escapeSequence = True
                     vocalize = True
-                    print("escape")
 
             elif byte == self.BreakChar or  byte == self.CancelChar:
                 if self.cancelSpeech():
@@ -321,11 +327,8 @@ class DECtalkEmulator(HardwareSynthEmulator):
             # End of byte processing code block.
 
             if vocalize:
-                self.safeSpeak()
-
-"""
-End of DECtalkEmulator class
-"""
+                self.safeSpeech()
+    # End of DECtalkEmulator class
 # Uncomment to test
 # em = DECtalkEmulator("stdin")
 # em.parse(b"Hello world[:xx]")

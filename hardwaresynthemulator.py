@@ -13,15 +13,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+#
+# Note: camelCase naming is used throughout this module because this code
+# is written and maintained by blind developers. camelCase is significantly
+# easier to follow when using a screen reader.
 """
 HardwareSynthEmulator class definition
 Emulates a hardware speech synthesizer.
 """
 
-import inspect
 import logging
 import os
+import re
 import select
 import speechd
 import sys
@@ -41,11 +44,13 @@ CC = 6
 class HardwareSynthEmulator:
 
     Identity  = "RPItalk"
-    Version = "1.2"
+    Version = "1.3"
     DeviceIdString = f"{Identity} {Version}\r"
     MaxBufferSize = 4096
 
     def __init__(self, serialDevice, debug=0):
+        if not re.match(r'^tty[A-Z]+[0-9]+$', serialDevice):
+            raise ValueError(f"Invalid device name: {serialDevice}")
         self.serialDevice = f"/dev/{serialDevice}"
 
         self.serialPort = None
@@ -65,7 +70,7 @@ class HardwareSynthEmulator:
             sys.exit(1)
         logging.info(message)
 
-    def setDebugLevel (self, debug):
+    def setDebugLevel(self, debug):
         self.debugLevel = debug
         if self.debugLevel >= 2:
             logLevel = logging.DEBUG
@@ -74,7 +79,7 @@ class HardwareSynthEmulator:
         else:
             logLevel = logging.WARNING
         logging.getLogger().setLevel(logLevel)
-        logging.info(f"Debug/log  level set to {self.debugLevel}/{logLevel}.")
+        logging.info(f"Debug/log level set to {self.debugLevel}/{logLevel}.")
 
     def dumpBytes(self, data: bytes, key: str) -> None:
         numBytes = len(data)
@@ -82,9 +87,11 @@ class HardwareSynthEmulator:
         asciiBytes = "".join(chr(b) if 32 <= b <= 126 else "." for b in data)
         print(f"{key} {numBytes} bytes: {hexBytes} |{asciiBytes}|", file=sys.stderr, flush=True)
 
-    def toInteger(self, bytes, dflt=None):
+    def toInteger(self, buff, dflt=None):
         try:
-            return int(bytes)
+            if isinstance(buff, (bytes, bytearray)):
+                buff = buff.decode("ascii", errors="ignore")
+            return int(buff)
         except (TypeError, ValueError):
             return dflt
 
@@ -93,7 +100,7 @@ class HardwareSynthEmulator:
 
     def convertWithinRange(self, oldValue, r1m, r1x, r2m=-100, r2x=100):
         """
-        Takes a value in one range(like  75 to 650 (the acceptable range for speech rate for a  DECtalk)
+        Takes a value in one range(like 75 to 650 (the acceptable range for speech rate for a  DECtalk)
         and mathematically converts it to  another range, (like -100 to 100, the range of values for Speech Dispatcher).
         """
         newValue = int((oldValue - (r1x - r1m)/2 - r1m) / ((r1x - r1m)/(r2x - r2m)) + (r2x +r2m)/2)
@@ -107,7 +114,7 @@ class HardwareSynthEmulator:
         except Exception as error:
             okay = False
         self.received.clear()
-        logging.debug("Cancelled speech is {okay}.")
+        logging.debug(f"Cancelled speech is {okay}.")
         return okay
 
     def speak(self, text):
@@ -131,8 +138,7 @@ class HardwareSynthEmulator:
                 try:
                     text = input("> ")
                     data = text.encode('ascii') + b"\r"
-                    response = self.parse(data)
-                    logging.info(f"Response is '{response}'.")
+                    self.parse(data)
                 except EOFError:
                     print()
                     break
@@ -142,24 +148,8 @@ class HardwareSynthEmulator:
 
         finally:
             self.endSpeech()
+
     #=== Host I/O functions ===#
-    def openSerialPort2(self):
-        while not os.path.exists(self.serialDevice):
-            logging.info(f"Waiting for USB device, {self.serialDevice} ...")
-            time.sleep(1.0)
-
-        try:
-            self.serialPort = os.open(self.serialDevice, os.O_RDWR | os.O_NOCTTY)
-            tty.setraw(self.serialPort)
-            attrs = termios.tcgetattr(self.serialPort)
-            attrs[CC][termios.VMIN] = 1
-            attrs[CC][termios.VTIME] = 0
-            attrs[IFLAG] &= ~(termios.IXON | termios.IXOFF | termios.IXANY)
-            termios.tcsetattr(self.serialPort, termios.TCSANOW, attrs)
-        except OSError as e:
-            raise RuntimeError(f"Failed to open/configure serial device {self.serialDevice}: {e}")
-        logging.info(f"Opened serial port on device, {self.serialDevice}.")
-
     def openSerialPort(self):
         while not os.path.exists(self.serialDevice):
             logging.info(f"Waiting for USB device, {self.serialDevice} ...")
@@ -175,7 +165,7 @@ class HardwareSynthEmulator:
             attrs = termios.tcgetattr(self.serialPort)
             attrs[CFLAG] |= (termios.CLOCAL | termios.CREAD)
 
-            #  Set baud  rate to 9600
+            #  Set baud rate to 9600
             attrs[ISPEED] = termios.B9600
             attrs[OSPEED] = termios.B9600
 
@@ -197,13 +187,13 @@ class HardwareSynthEmulator:
         """
         success = False
         if self.serialPort is None:
-            logging.warning("Serial port is None", 1)
+            logging.warning("Serial port is None")
         else:
             try:
                 bytesRequested = len(data)
                 bytesWritten = os.write(self.serialPort, data)
                 if bytesWritten != bytesRequested:
-                    logging.warn(f"Wrote ({bytesWritten} when {bytesRequested} were to be sent.")
+                    logging.warning(f"Wrote ({bytesWritten} when {bytesRequested} were to be sent.")
                 else:
                     success = True
 
@@ -228,30 +218,36 @@ class HardwareSynthEmulator:
                             for byte in data:
                                 self.received.append(byte)
                                 cnt += 1
-                                if byte == 0x5B:
+                                if byte == 0x5B:    # Command start
                                     esc = False
-                                elif byte == 0x1B:
+                                elif byte == 0x1B:    # Escape char
                                     hexBytes = " ".join(f"{b:02x}" for b in self.received)
                                     asciiBytes = "".join(chr(b) if 32 <= b <= 126 else "." for b in self.received)
                                     print(f"{cnt:02d}: {hexBytes}\n  {esc} '{asciiBytes}'", file=sys.stderr, flush=True)
                                     self.received.clear()
                                     esc = not esc
-                                    cnt  = 0
+                                    cnt = 0
 
                 except OSError:
                     print("Detected host disconnect.", file=sys.stderr, flush=True)
                     os.close(self.serialPort)
                     self.serialPort = None
 
-#=== Emulation functions ===#
-    def parse(self, data):
+    #=== Emulation functions ===#
+    def flushSpeech(self):
+        text = self.received.decode("utf-8", errors="replace").strip()
+        if text:
+            self.speak(text)
+            logging.debug("Said %r", text)
+        self.received.clear()
 
+    def parse(self, data):
         for byte in data:
             if 0x20 <= byte <= 0x7E:
                 self.received.append(byte)
 
             if byte in [0x01, 0x03, 0x0b, 0x0D] or  len(self.received) >= self.MaxBufferSize:
-                self.safeSpeak()
+                self.flushSpeech()
 
     def emulate(self):
         while True:
@@ -275,13 +271,8 @@ class HardwareSynthEmulator:
                                 self.response.clear()
 
                 except OSError:
-                    logging.warn("Detected host disconnect.")
+                    logging.warning("Detected host disconnect.")
                     os.close(self.serialPort)
                     self.serialPort = None
-
-        self.endSpeech()
-
-"""
-End of HardwareSynthEmulator class definition
-"""
+    # End of HardwareSynthEmulator class definition
 
