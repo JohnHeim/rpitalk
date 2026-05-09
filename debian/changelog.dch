@@ -1,4 +1,4 @@
-rpitalk (1.3-1) questing; urgency=medium
+rpitalk (1.3-1) UNRELEASED; urgency=medium
 
   * Added device name validation
   * Added flushSpeech() method; replaced safeSpeak() calls with it
@@ -11,7 +11,7 @@ rpitalk (1.3-1) questing; urgency=medium
   * Renamed safeSpeak to safeSpeech; fixed escape sequence detection
   * Replaced safeSpeak() calls with safeSpeech()
 
- -- John G Heim <jheim@math.wisc.edu>  Fri, 08 May 2026 11:18:43 -0500
+ -- John G Heim <jheim@math.wisc.edu>  Fri, 08 May 2026 12:47:38 -0500
 
 rpitalk (1.2) questing; urgency=medium
 
@@ -35,4 +35,4 @@ rpitalk (1.0) stable; urgency=medium
 
   * Initial Debian package.
 
- -- John G Heim <jheim@math.wisc.edu>  Thu, 05 Feb 2026 20:21:44 -0600
+ -- John G Heim <jheim@math.wisc.edu>  Thu, 05 Feb 2026 20:21:44 -0600	
