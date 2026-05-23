@@ -146,9 +146,16 @@ echo "  port    = ${Port}"
 echo "  debug   = ${Debug}"
 if [ "$ENABLE" = "1" ]; then
     echo "  PRODUCT_ID = ${PRODUCT_ID}"
+    systemctl enable rpitalk-gadget
+    systemctl  start rpitalk-gadget
 else
     echo "Gadget mode is disabled"
+    systemctl disable rpitalk-gadget
 fi
-echo
-echo "You may need to restart rpitalk or replug USB for changes to take effect."
+
+echo "Restarting emulator"
+systemctl enable rpitalk
+systemctl restart rpitalk
+
+
 # EOF
