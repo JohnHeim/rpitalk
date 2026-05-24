@@ -1,4 +1,4 @@
-rpitalk (1.3-1) UNRELEASED; urgency=medium
+rpitalk (1.3-1) unstable; urgency=medium
 
   * Added device name validation
   * Added flushSpeech() method; replaced safeSpeak() calls with it
@@ -9,7 +9,7 @@ rpitalk (1.3-1) UNRELEASED; urgency=medium
   * Corrected voice mapping table in setVoiceByID; added bounds check
   * Renamed safeSpeak to safeSpeech; fixed escape sequence detection
 
- -- John G Heim <jheim@math.wisc.edu>  Sat, 09 May 2026 11:20:16 -0500
+ -- John G Heim <jheim@math.wisc.edu>  Sun, 24 May 2026 19:09:30 +0200
 
 rpitalk (1.2) unstable; urgency=medium
 
